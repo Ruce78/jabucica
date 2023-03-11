@@ -1,0 +1,555 @@
+<?
+
+header('Cache-Control: no-store, no-cache, must-revalidate');
+
+if ($ver=="wml")header ("Content-type:text/vnd.wap.wml; charset=utf-8");
+
+else header("Content-Type:text/html; charset=UTF-8");
+
+
+
+require("inc.php");
+
+$link = connect_db();
+
+list($row, $id, $ps, $fsize1, $fsize2) = check_login($link);
+
+require("version.php");
+
+
+
+
+
+$user=$row["user"];
+
+$level=$row["level"];
+
+$bal=$row['bal'];
+
+$voteses=$row['voteses'];
+
+
+
+
+
+mysql_query ("Select * from bannlist WHERE (ip = '".$REMOTE_ADDR."')and(soft = '".$HTTP_USER_AGENT."')");
+
+if ((mysql_affected_rows()!=0)&&($rm!=9)&&($row["level"]<7)) {
+
+if ($ver=="wml"){
+
+echo $xml;
+
+echo $dtd;
+
+echo "<wml>\n";
+
+echo "<head><meta http-equiv=\"Cache-Control\" content=\"no-cache\" forua=\"true\"/></head>\n";
+
+echo "<card id=\"ban\" title=\"Ban!\" ontimer=\"index.php?ver=$ver&amp;ref=$ref\"><timer value=\"300\"/>\n";
+
+echo "<p align=\"center\">\n";
+
+}else{
+
+echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">";
+
+echo "<html xmlns=\"http://www.w3.org/1999/xhtml\">";
+
+echo "<head><link rel=\"stylesheet\" type=\"text/css\" href=\"css/css.css\"/>";
+
+echo "<title>Stop!</title>";
+
+echo "<META HTTP-EQUIV=\"Refresh\" CONTENT=\"30; URL=index.php?ver=$ver&amp;ref=$ref\">";
+
+echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body>";
+
+echo "<div align=\"center\">";
+
+}
+
+echo $fsize1;
+
+echo "Sizin ip+telefonun chata girishi baglandi<br/>\n";
+
+echo "Siz Ses Vere bilmersiniz.<br/>\n";
+
+echo $fsize2;
+
+if ($ver=="wml")echo "</p></card></wml>";
+
+else echo "</div></body></html>";
+
+mysql_close($link);
+
+exit;
+
+}
+
+
+
+
+
+/*
+
+//chata daxil olmaya qadaga
+
+$agent = $HTTP_USER_AGENT;
+
+
+
+ if ($row["posts"]<0) {
+
+if (((strpos ($agent,"M3Gate") !== false)||(strpos ($agent,"Opera") !== false)||(strpos ($agent,"emulator") !== false)||(strpos ($agent,"WinWAP") !== false)||(strpos ($agent,"Wapsilon") !== false)||(strpos ($agent,"Mozilla/4.0") !== false)||(strpos ($agent,"M3GATE") !== false))&&($rm!=11)&&($row["level"]<1))
+
+{
+
+if ($ver=="wml"){
+
+echo $xml;
+
+echo $dtd;
+
+echo "<wml>";
+
+echo "<card id=\"error\" title=\"Olmazz!!!\" ontimer=\"enter.php?$ses&amp;ref=$ref\"><timer value=\"350\"/>";
+
+echo "<p align=\"center\">";
+
+}else{
+
+echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">";
+
+echo "<html xmlns=\"http://www.w3.org/1999/xhtml\">";
+
+echo "<head><link rel=\"stylesheet\" type=\"text/css\" href=\"css/css.css\"/>";
+
+echo "<title>Olmazzz!!!</title>";
+
+echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body>";
+
+echo "<div align=\"center\">";
+
+}
+
+echo $fsize1;
+
+echo "Siz Shekillere ses vere ve baxa bilmersiniz.Bunun uchun 50 post yigmaniz lazimdir.Telefonla daxil olub 50 post yigin.Hormetle Doctor!!!";
+
+echo $fsize2;
+
+if ($ver=="wml")echo "</p></card></wml>";
+
+else echo "</div></body></html>";
+
+exit;
+
+mysql_close($link);
+
+}
+
+}
+
+*/
+
+
+
+
+
+if ($ver=="wml"){
+
+echo $xml;
+
+echo $dtd;
+
+echo "<wml>\n";
+
+echo "<card title=\"Istifadechiler\">\n";
+
+}else{
+
+echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">";
+
+echo "<html xmlns=\"http://www.w3.org/1999/xhtml\">";
+
+echo "<head><link rel=\"stylesheet\" type=\"text/css\" href=\"css/css.css\"/>";
+
+echo "<title>Shekilleriniz</title>";
+
+echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body>";
+
+}
+
+
+
+switch($mod) {
+
+
+
+default:
+
+if ($ver=="wml")echo "<p align=\"left\">\n";
+
+else echo "<div align=\"center\">\n";
+
+print $fsize1;
+
+print "<small>Umumi Istifadechi Reytingi</small><br/>";
+
+print "<small>Chatda Beyendiyiniz Usere Ses Verin</small><br/>En chox ses toplayan 2 istifadechiye hediyye olaraq status verilecek. I yer Moder, II yer VIP  . . . <br/>Her ayin sonu ses verme bitecek.<br/>";
+
+echo "<small><a href=\"search.php?$ses&amp;ref=$ref\">Nick Axtar ve Ses ver</a></small><br/>";
+
+
+
+print $divide;
+
+print $fsize2;
+
+
+
+
+
+
+
+$userall = mysql_query ("select count(id) as num from users where `voteses` > 0;");
+
+$usm = mysql_fetch_array($userall);
+
+$num = $usm["num"];
+
+if(!isset($s))$s=0;
+
+$mx=round(($num/10)+0.45);
+
+if($s>$mx)$s=$mx;
+
+if($s==0)$s=1;
+
+$ot=(($s-1)*10)+1;
+
+$do=$s*10;
+
+if($do>$num)$do=$num;
+
+$o=$ot-1;
+
+$n=$ot;
+
+if($do==0)$n=$o;
+
+echo $fsize1;
+
+echo "<small><a href=\"ses.php?go=golos&amp;$ses$takep2\">Ses verdiler?</a></small><br/>";
+
+echo "<small>Gosterir: $n-$do /Cemi: $num<br/></small>\n";
+
+echo $fsize2;
+
+echo $divide;
+
+$r = mysql_query ("select id,user,voteses from users order by voteses desc limit $o,$do");
+
+for ($i=$ot;$i<=$do;$i++){
+
+$arr = mysql_fetch_array($r);
+
+$login=$arr['user'];
+
+$usid=$arr['id'];
+
+$voteses=$arr['voteses'];
+
+print $fsize1;
+
+echo ($i).") <small><a href=\"info.php?$ses&amp;nk=$usid&amp;ref=$ref\">".$login."</a>|Ses: ".$arr['voteses']."</small><br/>";
+
+echo "<small><a href=\"users.php?mod=votes1&amp;$ses&amp;nk=$usid&amp;ref=$ref\">1[ses]</a>|</small>";
+
+echo "<small><a href=\"users.php?mod=votes5&amp;$ses&amp;nk=$usid&amp;ref=$ref\">5[ses]</a>|</small>";
+
+echo "<small><a href=\"users.php?mod=votes10&amp;$ses&amp;nk=$usid&amp;ref=$ref\">10[ses]</a>|</small><br/><br/>";
+
+
+
+print $fsize2;
+
+}
+
+$next=$s+1;
+
+$prev=$s-1;
+
+if ($num>$do) {
+
+$ot=(($next-1)*10)+1;
+
+$do=$next*10;
+
+if($do>$num)$do=$num;
+
+echo $divide;
+
+echo $fsize1;
+
+echo "<a href=\"users.php?$ses&amp;s=$next&amp;ref=$ref\">&gt;&gt;$ot-$do&gt;&gt;</a><br/>\n";
+
+echo $fsize2;
+
+}
+
+if($s>1) {
+
+$ot=(($prev-1)*10)+1;
+
+$do=$prev*10;
+
+echo $fsize1;
+
+echo "<a href=\"users.php?$ses&amp;s=$prev&amp;ref=$ref\">&lt;&lt;$ot-$do&lt;&lt;</a><br/>\n";
+
+echo $fsize2;
+
+}
+
+break;
+
+
+
+
+
+case 'votes1':
+
+if ($row["bal"]<2) {
+
+if ($ver=="wml")echo "<p align=\"center\">\n";
+
+else echo "<div align=\"center\">\n";
+
+echo $fsize1;
+
+echo "Siz 2 Baliniz olmasa ses vere bilmersiniz!!!";
+
+print $fsize2;
+
+} else {
+
+$q = mysql_query("select user,voteses from users where id='".$nk."';");
+
+$data = mysql_fetch_array($q);
+
+$counter = $data['voteses'];
+
+$login = $data['user'];
+
+$counter2 = $counter+1;
+
+mysql_query ("update users set voteses='".$counter2."' where id='".$nk."';");
+
+
+
+$counter2 = $counter+1;
+
+mysql_query ("INSERT INTO golos SET ses='".$counter2."', user = '".$nk."', who = '".$id."'");
+
+
+
+$counter2 = $counter+1;
+
+mysql_query ("update golos SET ses='".$counter2."' where user = '".$nk."' and who = '".$id."'");
+
+
+
+$bal=$row['bal'];
+
+$bal=$bal-2;
+
+mysql_query ("Update users set bal='".$bal."' where id='".$id."'");
+
+
+
+
+
+if ($ver=="wml")echo "<p align=\"center\">\n";
+
+else echo "<div align=\"center\">\n";
+
+echo $fsize1;
+
+echo "Sizin 1 Ses $login uchun Qebul Olundu!<br/>";
+
+echo $fsize2;
+
+mysql_close ($link);
+
+}
+
+
+
+
+
+break;
+
+
+
+
+
+case 'votes5':
+
+if ($row["bal"]<10) {
+
+if ($ver=="wml")echo "<p align=\"center\">\n";
+
+else echo "<div align=\"center\">\n";
+
+echo $fsize1;
+
+echo "Siz 10 Baliniz olmasa ses vere bilmersiniz!!!";
+
+print $fsize2;
+
+} else {
+
+$q = mysql_query("select user,voteses from users where id='".$nk."';");
+
+$data = mysql_fetch_array($q);
+
+$counter = $data['voteses'];
+
+$login = $data['user'];
+
+$counter2 = $counter+5;
+
+mysql_query ("update users set voteses='".$counter2."' where id='".$nk."';");
+
+
+
+$counter2 = $counter+5;
+
+mysql_query ("INSERT INTO golos SET ses='".$counter2."', user = '".$nk."', who = '".$id."'");
+
+$counter2 = $counter+5;
+
+mysql_query ("update golos SET ses='".$counter2."' where user = '".$nk."' and who = '".$id."'");
+
+
+
+$bal=$row['bal'];
+
+$bal=$bal-10;
+
+mysql_query ("Update users set bal='".$bal."' where id='".$id."'");
+
+
+
+if ($ver=="wml")echo "<p align=\"center\">\n";
+
+else echo "<div align=\"center\">\n";
+
+echo $fsize1;
+
+echo "Sizin 5 Ses $login uchun Qebul Olundu!<br/>";
+
+echo $fsize2;
+
+mysql_close ($link);
+
+}
+
+
+
+
+
+break;
+
+
+
+case 'votes10':
+
+if ($row["bal"]<20) {
+
+if ($ver=="wml")echo "<p align=\"center\">\n";
+
+else echo "<div align=\"center\">\n";
+
+echo $fsize1;
+
+echo "Siz 20 Baliniz olmasa ses vere bilmersiniz!!!";
+
+print $fsize2;
+
+} else {
+
+$q = mysql_query("select user,voteses from users where id='".$nk."';");
+
+$data = mysql_fetch_array($q);
+
+$counter = $data['voteses'];
+
+$login = $data['user'];
+
+$counter2 = $counter+10;
+
+mysql_query ("update users set voteses='".$counter2."' where id='".$nk."';");
+
+
+
+$counter2 = $counter+10;
+
+mysql_query ("INSERT INTO golos SET ses='".$counter2."', user = '".$nk."', who = '".$id."'");
+
+$counter2 = $counter+10;
+
+mysql_query ("update golos SET ses='".$counter2."' where user = '".$nk."' and who = '".$id."'");
+
+
+
+$bal=$row['bal'];
+
+$bal=$bal-20;
+
+mysql_query ("Update users set bal='".$bal."' where id='".$id."'");
+
+
+
+if ($ver=="wml")echo "<p align=\"center\">\n";
+
+else echo "<div align=\"center\">\n";
+
+echo $fsize1;
+
+echo "Sizin 10 Ses $login uchun Qebul Olundu<br/>";
+
+echo $fsize2;
+
+mysql_close ($link);
+
+}
+
+
+
+
+
+break;
+
+}
+
+
+
+print $fsize1;
+echo $divide;
+echo "Qeyd: 1 ses 2 bal, 5 ses 10 bal, 10 ses 20 baldir<br/>";
+echo $divide; 
+echo "<a href=\"users.php?$ses&amp;ref=$ref\">Userler</a><br/>\n";
+
+echo "<a href=\"enter.php?$ses&amp;ref=$ref\">Dehliz</a><br/>\n";
+
+echo $fsize2;
+
+if ($ver=="wml")echo "</p></card></wml>";
+
+else echo "</div></body></html>";
+
+
+
+?>
