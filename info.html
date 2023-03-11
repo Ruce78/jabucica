@@ -1,0 +1,1153 @@
+<?
+##################################################################################################
+##	                Script name  :  WapChat "Region-56"                                         ##
+##	                    Version  :  3.2 (23.01.2007)                                            ##
+##                      Made by  :  Медиум                                                      ##
+##	                     E-mail  :  seaquest@mail.ru	                                        ##
+##                          ICQ  :  299-411-279                                                 ##
+##                         Site  :  http://wap.region-56.ru                                     ##
+## По вопросам приобритения скрипта или обновлений для него обращатьтся на вышеуказанные данные.##
+## Распространение скрипта другими лицами запрешено. Скрипт защищён законом об авторском праве. ##
+##################################################################################################
+header("Cache-Control: no-store, no-cache, must-revalidate"); 
+if (($ver!="wml")&&($ver!="xhtml")){
+$ver="xhtml";
+}
+if ($ver=="wml") header ("Content-type:text/vnd.wap.wml; charset=utf-8");
+else if ($ver=="xhtml") header("Content-Type:text/html; charset=UTF-8");
+else header ("Content-type:text/vnd.wap.wml; charset=utf-8");
+require("inc.php");
+$link = connect_db();
+list($row, $id, $ps, $fsize1, $fsize2) = check_login($link);
+require("version.php");
+$ggggg=$row["gzip"];
+if($ggggg=="1"){
+include("gz.php");
+}
+$ne = mysql_fetch_array(mysql_query("Select level From users Where id='".$nk."'"));
+
+//--------------------Blokada - upload u bazu ------------//
+if(isset($blok) && strlen($blok) && $row['level'] > 6 && $level<$row['level']){
+//$ne = mysql_fetch_array(mysql_query("Select level From users Where id='".$nk."'"));
+if($ne[0] < 5)
+mysql_query("Update users Set blokada='".$blok."' Where id='".$nk."'");
+}
+if(isset($ch) && strlen($ch) && $nk==$id){
+  $nick = $row['user'];
+  if($ch == 1){
+	if($ver=="wml"){
+		echo "<anchor>Promeni";
+		echo "<go href=\"info.php?$ses&amp;nk=$id&amp;ch=2&amp;ref=$ref\" method=\"post\">";
+		echo "<postfield name=\"nik\" value=\"$nick\"/>";
+		echo "</go></anchor><br/>";
+	}else{
+	echo "<form align=\"center\" action=\"info.php?$ses&amp;nk=$nk&amp;ch=2&amp;ref=$ref\" method=\"post\">";
+	echo "<input name=\"nik\" value=\"$nick\"  size=\"15\"/>";
+	echo " <input type=\"submit\" value=\"Promeni\"/> | <a href=\"info.php?$ses&amp;nk=$id&amp;ref=$ref\">Odustani</a>";
+	}
+  exit;
+  }elseif($ch == 2 && $nk==$id && $row['posts']>3000){
+	  if(mysql_query("Update users Set user='".$nik."' Where id='".$id."'"))
+	 mysql_query("Update users Set posts=(posts - 500) Where id='".$id."'");
+	  }
+}
+//---------------- 25.12.2017 Tihiokean -------------------//
+if (isset ($rm) || $rm==""){
+if(isset($HTTP_GET_VARS['rm']) || $rm=="") {$rm = $HTTP_GET_VARS['rm'];}
+//if (!ctype_digit($rm)) { header("Location: index.php"); die; }
+$rm = mysql_escape_string($rm);
+mysql_query ("Select rm from rooms where rm='".$rm."';");
+if (mysql_affected_rows() == 0){
+if ($ver=="wml"){
+echo $xml;
+echo $dtd;
+echo "<wml>";
+echo "<card id=\"error\" title=\"Greska!!!\" ontimer=\"enter.php?$ses&amp;ref=$ref\"><timer value=\"15\"/>";
+echo "<p align=\"left\">";
+}else{
+echo "<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.0//EN\" \"http://www.wapforum.org/DTD/xhtml-mobile10.dtd\">";
+echo "<html xmlns=\"http://www.w3.org/1999/xhtml\">";
+echo "<head>";
+if($row["css"]!=""){
+$csss=$row["css"];
+echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$csss\"/>";
+}else{
+echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"css/css.css\"/>";
+}
+echo "<title>Greska!!!</title>";
+echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body><div class=\"zero\">";
+}
+echo $fsize1;
+echo "Ova soba ne postoji!";
+echo $fsize2;
+if ($ver=="wml")echo "</p></card></wml>";
+else echo "</div></body></html>";
+mysql_close($link);
+exit;
+}
+if (empty($pwd)) $pwd=pub;
+$pwd=htmlspecialchars(stripslashes(trim($pwd)));
+if($rm==10) $takep="&amp;pwd=$pwd&amp;ref=$ref";
+else if($mod=="privat") $takep="&amp;mod=$mod&amp;ref=$ref";
+else $takep="&amp;ref=$ref";
+}else{
+$takep="&amp;ref=$ref";
+}
+$clan=$_POST["clan"];
+$latuser=strtolower($clan);
+if(isset($HTTP_GET_VARS['nk'])) {$nk = $HTTP_GET_VARS['nk'];}
+if($nk=="" || !$nk){
+$pronadjeno1 = mysql_fetch_array(mysql_query("SELECT id FROM users WHERE latuser='".$latuser."'"));
+if($pronadjeno1[0]>0)
+{
+$nk=$pronadjeno1[0];
+}else{
+$nk=$clan;
+}
+}
+//if (!ctype_digit($nk)) { header("Location: index.php"); die; }
+/* $select = @mysql_query ("Select id,user,pass,name,birth,sex,city,mail,infa,icq,posts,credits,anakredit,gposts,status,date,op,onl,safe,mob,user_ip,user_soft,opera,img,nastroi,visit,room,byeotv,number,level,mysmile,votefoto,para,myavatar,version, gpluses, pwt1, inbox1, pwt2, inbox2, gde, gdetime, milioner, hostname, osx, valid, privat, glavni from users where id='".$nk."'"); */
+$select = mysql_query ("Select * From users where id='".$nk."'");
+if (mysql_affected_rows() == 0 || $nk<5 ||($nk>5 && $nk<9)){
+if ($ver=="wml"){
+echo $xml;
+echo $dtd;
+echo "<wml>";
+echo "<card id=\"error\" title=\"Greska!!!\" ontimer=\"enter.php?$ses&amp;rm=$rm&amp;ref=$ref\"><timer value=\"15\"/>";
+echo "<p align=\"left\">";
+}else{
+echo "<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.0//EN\" \"http://www.wapforum.org/DTD/xhtml-mobile10.dtd\">";
+echo "<html xmlns=\"http://www.w3.org/1999/xhtml\">";
+echo "<head>";
+if($row["css"]!=""){
+$csss=$row["css"];
+echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$csss\"/>";
+}else{
+echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"css/css.css\"/>";
+}
+echo "<title>Greska!!!</title>";
+echo "<META HTTP-EQUIV=\"Refresh\" CONTENT=\"2; URL=enter.php?$ses&amp;rm=$rm&amp;ref=$ref\">";
+echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body><div class=\"zero\">";
+}
+echo $fsize1;
+echo "Korisnik nije pronadjen!<br/>";
+echo $divide;
+echo "<a href=\"chat.php?$ses&amp;rm=$rm&amp;ref=$ref\">Chat Soba</a><br/>\n";
+echo $fsize2;
+if ($ver=="wml")echo "</p></card></wml>";
+else echo "</div></body></html>";
+mysql_close ($link);
+exit;
+}
+$inf = mysql_fetch_array ($select);
+$usid=$inf["id"];
+$nick = $inf["user"];
+$pass = $inf["pass"];
+$name = $inf["name"];
+$birth = $inf["birth"];
+$sex = $inf["sex"];
+$city = $inf["city"];
+$mail = $inf["mail"];
+$site = $inf["site"];
+$infa = $inf["infa"];
+$icq = $inf["icq"];
+$posts = $inf["posts"];
+$credits = $inf["credits"];
+$anakredit = $inf["anakredit"];
+$gposts = $inf["gposts"];
+$status = $inf["status"];
+$date = $inf["date"];
+$op = $inf["op"];
+$onl = $inf["gdetime"];
+$mob = $inf["mob"];
+$us_ip = $inf["user_ip"];
+$us_soft = $inf["user_soft"];
+$img = $inf["img"];
+$nastroi = $inf["nastroi"];
+$visit = $inf["visit"];
+$room = $inf["room"];
+$byeotv = $inf["byeotv"];
+$number = $inf["number"];
+$level=$inf["level"];
+$fr = $inf["friends"];
+$mysmile = $inf["mysmile"];
+$votefoto = $inf["votefoto"];
+$ign=$inf["ignor"];
+$para=$inf["para"];
+$bee=$inf["site"];
+$myavatar=$inf["myavatar"];
+$version=$inf["version"];
+$safe=$inf["safe"];
+$bind4=$row['bind4'];
+$gpluses=$inf['gpluses'];
+$pwt1=$inf['pwt1'];
+$inbox1=$inf['inbox1'];
+$pwt2=$inf['pwt2'];
+$inbox2=$inf['inbox2'];
+$milioner=$inf['milioner'];
+$gde1 = $inf["gde"];
+$hostname = $inf["hostname"];
+$osx = $inf["osx"];
+$valid = $inf["valid"];
+$privat = $inf["privat"];
+$opera = $inf["opera"];
+$glavni = $inf["glavni"];
+//---------------- Dodata promenljiva $blokada ---------//
+$blokada = $inf["blokada"];
+//---------------- 25.12.2017 Tihiokean ----------------//
+if ($credits>=0 && $credits<100) $victstatus="Ucenik";
+if ($credits>=100 && $credits<500) $victstatus="Student";
+if ($credits>=500 && $credits<1000) $victstatus="Diploma";
+if ($credits>=1000 && $credits<2000) $victstatus="Magistar";
+if ($credits>=2000 && $credits<5000) $victstatus="Buduci Doktor";
+if ($credits>=5000 && $credits<7000) $victstatus="Doktor Nauka";
+if ($credits>=7000) $victstatus="Profesor Neznalica";
+$levelselect = @mysql_query ("Select name from levels where level='".$level."'");
+$levels = @mysql_fetch_array($levelselect);
+$levname = $levels["name"];
+if ($ver=="wml"){
+echo $xml;
+echo $dtd;
+echo "<wml>\n";
+echo "<head><meta http-equiv=\"Cache-Control\" content=\"no-cache\" forua=\"true\"/></head>\n";
+echo "<card id=\"info\" title=\"$nick\">\n";
+echo "<p align=\"left\" mode=\"wrap\">\n";
+}else{
+echo "<!DOCTYPE html PUBLIC \"-//WAPFORUM//DTD XHTML Mobile 1.0//EN\" \"http://www.wapforum.org/DTD/xhtml-mobile10.dtd\">";
+echo "<html xmlns=\"http://www.w3.org/1999/xhtml\">";
+
+echo "<head>";
+if($row["css"]!=""){
+$csss=$row["css"];
+echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"$csss\"/>";
+}else{
+echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"css/css.css\"/>";
+}
+echo "<title>".$nick."</title>";
+echo "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/></head><body><div class=\"header\">";
+}
+//------------------ Blokada --------------------------------//
+if($row['level'] > 6 && $id != $nk && $level<9){
+  if(isset($blokada) && strlen($blokada)){
+	  if($blokada == 0){
+	  echo "<p style=\"text-align: center; margin: 2px\"><a href=\"info.php?$ses&amp;nk=$nk&amp;blok=1&amp;ref=$ref\">Blokiraj ".$nick."</a></p>";
+	  }else{
+	  echo "<p style=\"text-align: center; margin: 20px\"><a href=\"info.php?$ses&amp;nk=$nk&amp;blok=0&amp;ref=$ref\">Skini Blokadu</a></p>";  
+	  }
+  }
+}
+if($row['posts'] > 3000 && $id==$nk){
+
+echo "<p style=\"text-align: center; margin: 2px\"><a href=\"info.php?$ses&amp;nk=$id&amp;ch=1&amp;ref=$ref\">Promeni Nick</a> -- Cena: 500 postova</p>";
+}
+//}
+//---------------- 25.12.2017 Tihiokean -------------------//
+//////////////////////////////////////////////////
+$frs = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM friends WHERE id='".$id."' AND usid='".$nk."' AND ok='1' OR id='".$nk."' AND usid='".$id."' AND ok='1'"));
+@mysql_query ("Select * from ignor where usid=".$id." and id='".$nk."'");
+if (mysql_affected_rows()!=0){
+echo $fsize1;
+if ($sex=="M") echo "<b>".$nick."</b> stavio Vas je u Ignor!<br/>\n";
+else  echo "<b>".$nick."</b> stavila Vas je u Ignor!<br/>\n";
+}else if ($privat==1 && $frs[0]==0 && $id!=$nk && $row["level"]<'5'){
+echo $fsize1;
+echo "<b>".$nick."</b> Ne zeli da mu vide profil osobe koje nisu u listi prijatelja!<br/>\n";
+}else if($rm!="" || $rm=="0"){
+echo $fsize1;
+echo "Nick: <b>".$nick."</b><br/>\n";
+///////////////////////////////////////////
+$gde="Profil $nick";
+include("gde.php");
+///////////////////////////////////////////
+echo $fsize2;
+if((isset($rm))&&($rm!="")){ 
+echo $fsize1;
+//echo "Poruka za <b>".$nick."</b><br/>\n";
+if($ver=="xhtml"){ echo "</div><div class=\"zero\">";}
+echo $fsize2;
+if ($ver=="wml"){ 
+echo "<input name=\"msg$ref\" maxlength=\"300\" title=\"Text\"/><br/>\n";
+if ($row["level"]>=4){
+echo "<select name=\"shrift\">\n";
+echo "<option value=\"0\">Normalno</option>\n";
+echo "<option value=\"1\">Iskoseno</option>\n";
+}
+
+if ($row["level"]>=4) {echo "<option value=\"2\">Podvuceno</option>\n";}
+if ($row["level"]>=4) {echo "<option value=\"3\">Iskoseno/Podvuceno</option>\n";}
+if ($row["level"]>=7) {echo "<option value=\"4\">Podebljano</option>\n";}
+if ($row["level"]>=7) {echo "<option value=\"5\">Podebljano/Podvuceno</option>\n";}
+if ($row["level"]>=7) {echo "<option value=\"6\">Veliko</option>\n";}
+if ($row["level"]>=4) {echo "</select><br/>\n";}
+}else{
+echo "<form action=chat.php?id=$id&amp;ps=$ps&amp;ver=$ver&amp;css=$css&rm=$rm$takep method=post title=\"Poruka\">\n";
+echo "<input type=\"hidden\" name=\"towhom\" value=$usid />\n"; 
+echo "<input type=\"hidden\" name=\"komu\" value=\"".$nick."\"/>\n";
+echo "<input type=\"text\" name=\"$ref\" maxlength=\"300\"><br/>\n";
+echo "<input type=\"hidden\" name=\"ssseee\" value=\"$ref\"/>\n";
+if ($row["level"]>=4){
+echo "<select name=\"shrift\">\n";
+echo "<option value=\"0\">Normalno</option>\n";
+echo "<option value=\"1\">Iskoseno</option>\n";
+}
+if ($row["level"]>=4) {echo "<option value=\"2\">Podvuceno</option>\n";}
+if ($row["level"]>=4) {echo "<option value=\"3\">Iskoseno/Podvuceno</option>\n";}
+if ($row["level"]>=7) {echo "<option value=\"4\">Podebljano</option>\n";}
+if ($row["level"]>=7) {echo "<option value=\"5\">Podebljano/Podvuceno</option>\n";}
+if ($row["level"]>=7) {echo "<option value=\"6\">Veliko</option>\n";}
+if ($row["level"]>=4) {echo "</select><br/>\n";}
+}
+if(($row["say"]==1)||($mod=="privat")){
+echo "<select name=\"prvt\">\n";
+if ($nk!==$id)echo "<option value=\"1\">Privatno</option>\n";
+if ($nk==5)echo "<option value=\"1\">Privatno</option>\n";
+if ($nk!=5){
+echo "<option value=\"0\">Javno</option>\n";
+if ($nk!==$id && $row["posts"]>300) echo "<option value=\"2\">Pismo</option>\n";
+}
+echo "</select><br/>\n";
+} else {
+echo "<select name=\"prvt\">\n";
+if ($nk!=5)echo "<option value=\"0\">Javno</option>\n";
+if ($nk!==$id)echo "<option value=\"1\">Privatno</option>\n";
+if ($nk==5)echo "<option value=\"1\">Privatno</option>\n";
+if ($nk!=5 && $nk!==$id && $row["posts"]>300)echo "<option value=\"2\">Pismo</option>\n";
+echo "</select><br/>\n"; 
+}
+if ($ver=="wml"){                                          
+echo $fsize1;
+echo "<anchor title=\"send\">Napisi<go href=\"chat.php?$ses&amp;css=$css;ver=$ver&amp;rm=$rm$takep\" method=\"post\">\n";
+echo "<postfield name=\"msg\" value=\"$(msg$ref)\"/>\n";  
+echo "<postfield name=\"komu\" value=\"".$nick."\"/>";
+echo "<postfield name=\"towhom\" value=\"$usid\"/>\n";
+echo "<postfield name=\"prvt\" value=\"$(prvt)\"/>\n";
+echo "<postfield name=\"shrift\" value=\"$(shrift)\"/>\n";
+if ($nk!=5)echo "<postfield name=\"nastr\" value=\"$(nastr)\"/>\n";
+echo "</go></anchor>\n";
+echo $fsize2;
+echo "<br/>\n";
+}else{
+echo "<input class=\"ibutton\" type=submit value=\"Napisi\"/></form>\n";
+}
+}
+echo $fsize1;
+echo "<a href=\"info.php?$ses&amp;nk=$nk$takep\">Pogledaj Profil</a><br/>";
+
+if($nk!=$id){
+if($level<4 || $row["level"]>3){
+$ignorisan = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM ignor WHERE id='".$id."' AND usid='".$nk."'"));
+if($ignorisan[0]!='0'){
+echo "<a href=\"ignor.php?$ses&amp;nk=$usid&amp;go=add&amp;rm=$rm&amp;ref=$ref\">Obrisi Ignor</a><br/>\n";
+}else{
+echo "<a href=\"ignor.php?$ses&amp;nk=$usid&amp;mod=add&amp;rm=$rm&amp;ref=$ref\">Dodaj Ignor</a><br/>\n";
+}
+}
+}
+if ($row["level"]>4 && $level<=$row["level"]){
+//if($mob!=""){
+//echo "<b>Browser:</b> $mob<br/>\n";
+//}
+echo $divide;
+echo "<b>Browser:</b> $us_soft<br/>\n";
+if($row["level"]>4){
+echo "<a href=\"mpanel.php?$ses&amp;nk=$usid&amp;do=blockbrow&amp;rm=$rm&amp;ref=$ref\">Blokiraj ovaj browser za reg</a><br/>\n";
+}
+if($row["level"]>6){
+if($opera!=""){
+echo "<b>Opera mini:</b> $opera<br/>\n";
+}
+}
+if($us_ip!=""){
+echo "<b>IP:</b><a href=\"pratiip.php?&amp;$ses&amp;usid=$usid&amp;ref=$ref\"> $us_ip</a> [ <a href=\"http://wen.ru/whois/?ip=$us_ip\">Podaci IP</a> ]<br/>\n";
+if($row["level"]>4){
+echo "<a href=\"mpanel.php?$ses&amp;nk=$usid&amp;do=blockip&amp;rm=$rm&amp;ref=$ref\">Blokiraj ovaj IP za reg</a><br/>\n";
+}
+}
+if($hostname!="" && $row["level"]>6){
+echo "<b>Operater:</b> $hostname<br/>\n";
+}
+if($osx!="" && $row["level"]>6){
+echo "<b>OS:</b> $osx<br/>\n";
+}
+}
+echo $divide;
+}else{
+echo $fsize1;
+
+switch($mod) {
+default:
+
+if($onl+600>time()){
+echo "Clan je <img src=\"icon/online1.png\" alt=\"online\"/><br/>";
+}else{
+echo "Clan je <img src=\"icon/ofline1.png\" alt=\"offline\"/><br/>";
+}
+if ($row["level"]>3){
+$ulov = mysql_fetch_array(mysql_query ("SELECT ulov,id FROM users WHERE id='".$usid."'"));
+if($ulov[0]<'1')
+{
+
+
+echo "<a href=\"ucinak.php?$ses&amp;ref=$ref&amp;page=$ppage&amp;s=ulov&amp;to=$nk\">Selektuj ulovljenog &#187;</a><br/>\n";
+
+}
+}
+echo $fsize2;
+if((!isset($rm))||($rm=="")){ 
+echo $fsize1;
+echo "<a href=\"send.php?$ses&amp;to=$nick&amp;ref=$ref\">[Posalji Pismo]</a><br/>\n";
+echo "<a href=\"fotopp.php?ver=$ver&amp;id=$id&amp;ps=$ps&amp;ref=$ref&amp;mess=new&amp;who=$nick\">[Posalji FotoPismo]</a><br/>\n";
+echo $divide;
+echo $fsize2;
+}
+echo $fsize1;
+if($valid==0)
+{
+echo "<a href=\"apanel.php?$ses&amp;to=$nk&amp;go=valid$takep\">Potvrdi Registraciju</a><br/>\n";
+echo "<a href=\"apanel.php?$ses&amp;to=$nk&amp;go=valid1$takep\">Obrisi Registraciju</a><br/>\n";
+}
+
+echo "Nick: <b>".$nick."</b><br/>\n";
+if ($row["level"]>4 && $level<=$row["level"]){
+if($maska!=""){
+echo "Nik pod maskom: <b>".$maska."</b><br/>\n";
+}
+}
+echo "<b>ID:</b> $usid<br/>\n";
+$name=zamena($name);
+echo "<b>Ime:</b> $name<br/>\n";
+if($row["level"]>6){
+echo "Modlog aktivnost <a href=\"aktivnost.php?&amp;$ses&amp;usid=$usid&amp;ref=$ref\">".$nick."</a><br/>\n";
+}
+///////////////////////////////////////////
+$gde="Profil $nick";
+include("gde.php");
+///////////////////////////////////////////
+$galleryses = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM gallery WHERE user='".$nk."'"));
+if($galleryses[0]>0){
+$slicica = mysql_fetch_array(mysql_query ("SELECT id, file, upload FROM gallery WHERE user='".$nk."' ORDER BY RAND() LIMIT 1"));
+if($slicica[2]=='1'){$filenamess = "gallery/$randm[2]";}
+else{$filenamess = "$slicica[1]";}
+if($row["slika"]==1){
+echo "<a href=\"galery.php?mod=viewuser&amp;who=$nk&amp;$ses&amp;ref=$ref\"><img src=\"gallery/$slicica[1]\" alt=\"$slicica[0]\"/></a><br/>";
+}else{
+echo "<a href=\"gallery.php?idss=$slicica[0]\">Profil Slika</a><br/>";
+}
+}/*
+$albumsss = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM album WHERE uid='".$nk."'"));
+if($albumsss[0]>0){
+echo "<a href=\"albums.php?action=viewuser&amp;who=$nk&amp;$ses&amp;ref=$ref\">Foto Albumi($albumsss[0])</a><br/>";
+}
+$stihovi = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM stihovi WHERE uid='".$nk."'"));
+if($stihovi[0]>0){
+echo "<a href=\"stihovi.php?action=viewuser&amp;who=$nk&amp;$ses&amp;ref=$ref\">Stihovi($stihovi[0])</a><br/>";
+}
+$comments = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM comments WHERE user='".$nk."'"));
+echo "<a href=\"comments.php?&amp;who=$nk&amp;$ses&amp;ref=$ref&amp;page=1\">Komentari ($comments[0])</a><br/>";
+$likes = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM likes WHERE uid='".$nk."' AND who='".$id."'"));
+if($likes[0]==0)
+{
+echo "[<a href=\"comments.php?$ses&amp;ref=$ref&amp;who=$nk&amp;mod=like\">Volim Profil</a>] ";
+echo "[<a href=\"comments.php?$ses&amp;ref=$ref&amp;who=$nk&amp;mod=unlike\">Ne Volim Profil</a>]<br/>\n";
+}else{
+$like = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM likes WHERE uid='".$nk."' AND likes='1'"));
+$dislike = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM likes WHERE uid='".$nk."' AND likes='0'"));
+echo "[<a href=\"comments.php?$ses&amp;ref=$ref&amp;who=$nk&amp;mod=like1&amp;page=1\">Vole Profil: $like[0]</a>] ";
+echo "[<a href=\"comments.php?$ses&amp;ref=$ref&amp;who=$nk&amp;mod=unlike1&amp;page=1\">Ne Vole Profil: $dislike[0]</a>]<br/>\n";
+}
+if($mysmile!=""){
+echo "[<a href=\"fr5.php?usid=$usid\">Licni Smajli</a>]<br/>\n";
+}
+if($myavatar!=""){
+echo "[<a href=\"fr4.php?usid=$usid\">Licni Avatar</a>]<br/>\n";
+}*/
+
+echo "| &#187; <a href=\"info.php?$ses&amp;nk=$nk$takep&amp;mod=kreativnost\">Kreativnost</a><br/>";
+echo "| &#187; <a href=\"info.php?$ses&amp;nk=$nk$takep&amp;mod=statistika\">Statistika</a><br/>";
+echo "| &#187; <a href=\"info.php?$ses&amp;nk=$nk$takep&amp;mod=informacije\">Informacije</a><br/>";
+$me = $usid;
+if($me=="$id")
+{
+echo "<a href=\"pregled.php?$ses&amp;ref=$ref\">Pregled mog profila</a><br/>";
+}
+/*
+if ($row["level"]>1) {
+
+$rb = mysql_fetch_row(mysql_query("SELECT count(`id`) FROM `avtoritet` WHERE `id_user`='".(int)$nk."' AND `id_who`='$id'"));
+$pv = $rb[0];
+$rbv = mysql_fetch_row(mysql_query("SELECT `avtoritet`, `avtoritet1` FROM `users` WHERE `id`='$nk'"));
+$avtoritet = $rbv[0];
+$avtoritet1 = $rbv[1];
+$ak = $avtoritet - $avtoritet1;
+
+
+echo '[<a href="avt.php?'.$ses.'&amp;nk='.$nk.'&amp;ref='.$ref.'">Reputacija:</a>] '.$ak.' (+'.$avtoritet.'/-'.$avtoritet1.') <br/>';
+
+
+}
+echo "<a href=\"flert.php?&amp;nk=$nk&amp;$ses&amp;ref=$ref\">Flertuj</a><br/>";
+echo'Urednicki index: ';
+$z   = mysql_query("SELECT * FROM `zvezda` where `komu` = '".$inf['id']."' order by `id` desc limit 5");
+if(mysql_num_rows($z)==0){echo'[ nema ]';}                                   
+while($a = mysql_fetch_assoc($z)) {
+echo '<img src="icon/zvezda.png" alt="*" />';
+                           }
+echo ' '.(($row["level"]>7 && $inf['level']>4 && $inf['id']!==$id)?'<a href="/zvezda.php?'.$ses.'&amp;nk='.$inf['id'].'&amp;mod=add">[+]</a>/<a href="/zvezda.php?'.$ses.'&amp;nk='.$inf['id'].'&amp;mod=lista">[-]</a>':'').'<br/>';
+
+if($glavni==1){
+echo "<b>Status:</b> Urednik<br/>\n";
+}else{
+if ($nk==16) echo "<b>Status:</b> **OSNIVAC CHATA**<br/>\n";
+else echo "<b>Status:</b> $levname<br/>\n";
+}
+
+  $nopl = mysql_fetch_array(mysql_query("SELECT sex FROM users WHERE id='".$nk."'"));
+  if($nopl[0]=='M')
+  {
+  $brak = mysql_fetch_array(mysql_query("SELECT zensko FROM xix_maticar WHERE musko='".$nk."' AND aktivno='1'"));}
+  else{$brak = mysql_fetch_array(mysql_query("SELECT musko FROM xix_maticar WHERE zensko='".$nk."' AND aktivno='1'"));}
+  $ni = getnick_uid($brak[0]);
+  $brakic = " <a href=\"info.php?$ses&amp;nk=$brak[0]\">$ni</a>";
+  $noplss = mysql_fetch_array(mysql_query("SELECT sex FROM users WHERE id='".$id."'"));
+  if($brak){
+  echo "| &#187; U braku sa: <b>$brakic</b><br/>";}
+  else if($nk!=id && $nopl[0]!=$noplss[0]){echo"| &#187; <a href=\"maticar.php?mod=maticni&amp;who=$nk&amp;$ses\">Zaprosi clana &#9829;</a><br/>";}
+*/
+#############################pregled profila#############################
+if($row["level"]<5){
+if($nk!=$id){
+$sql = mysql_fetch_array(mysql_query("SELECT COUNT(id) FROM lastview WHERE whonick='".$nk."'")); 
+if ($sql[0]>10) 
+{ 
+$sql = mysql_fetch_array(mysql_query("SELECT MAX(id) FROM lastview WHERE whonick='".$nk."'")); 
+$sql = $sql[0]-9; 
+mysql_query("DELETE FROM lastview WHERE whonick='".$nk."' AND id <'".$sql."'"); 
+} 
+$lv= $id; 
+$a = $nk; 
+if($a!=$uid) 
+{ 
+mysql_query("INSERT INTO lastview SET lastview='".$lv."', whonick='".$nk."', ltime='".time()."'"); 
+} 
+}
+}
+#############################pregled profila#############################
+//if($nastroi!="0") echo "-Hacтpoeниe: $nastroi<br/>\n";
+/*
+echo "<b>Datum Rodjenja:</b> $birth<br/>\n";
+$horos= explode("-",$birth);
+if(($horos[0]>='23' && $horos[1]=='12') || ($horos[0]<='20' && $horos[1]=='01')){
+$znak="Jarac";
+}else if(($horos[0]>='21' && $horos[1]=='01') || ($horos[0]<='19' && $horos[1]=='02')){
+$znak="Vodolija";
+}else if(($horos[0]>='20' && $horos[1]=='02') || ($horos[0]<='20' && $horos[1]=='03')){
+$znak="Ribe";
+}else if(($horos[0]>='21' && $horos[1]=='03') || ($horos[0]<='20' && $horos[1]=='04')){
+$znak="Ovan";
+}else if(($horos[0]>='21' && $horos[1]=='04') || ($horos[0]<='19' && $horos[1]=='05')){
+$znak="Bik";
+}else if(($horos[0]>='20' && $horos[1]=='05') || ($horos[0]<='21' && $horos[1]=='06')){
+$znak="Blizanci";
+}else if(($horos[0]>='22' && $horos[1]=='06') || ($horos[0]<='22' && $horos[1]=='07')){
+$znak="Rak";
+}else if(($horos[0]>='23' && $horos[1]=='07') || ($horos[0]<='23' && $horos[1]=='08')){
+$znak="Lav";
+}else if(($horos[0]>='24' && $horos[1]=='08') || ($horos[0]<='22' && $horos[1]=='09')){
+$znak="Devica";
+}else if(($horos[0]>='23' && $horos[1]=='09') || ($horos[0]<='21' && $horos[1]=='10')){
+$znak="Vaga";
+}else if(($horos[0]>='22' && $horos[1]=='10') || ($horos[0]<='21' && $horos[1]=='11')){
+$znak="Skorpija";
+}else if(($horos[0]>='22' && $horos[1]=='11') || ($horos[0]<='22' && $horos[1]=='12')){
+$znak="Strelac";
+}
+echo "<b>Horoskopski Znak:</b> $znak<br/>\n";
+if ($sex=="M")echo "<b>Pol:</b> Musko<br/>\n";
+else if ($sex=="Z")echo "<b>Pol:</b> Zensko<br/>\n";
+else echo "<b>Pol:</b> Neodredjen<br/>\n";
+$city=zamena($city);
+echo "<b>Grad:</b> $city<br/>\n";
+if($para!=""){
+$para=zamena($para);
+if ($sex=="M") echo "<b>Ozenjen:</b> Zena <b>$para</b><br/>\n";
+else echo "<b>Udata:</b> Muz <b>$para</b><br/>\n";
+}
+if($op!=""){
+$op=zamena($op);
+echo "<b>Operater:</b> $op<br/>\n";
+}
+$number=zamena($number);
+if(($number!=0)&&($number!=""))echo "<b>Broj:</b> <a href=\"wtai://wp/mc;+$number\">+$number</a><br/>\n";
+if($mail!=""){
+$mail=zamena($mail);
+//$mail="<a href=\"mail.php?$ses&amp;rm=$rm&amp;to=$mail\">$mail</a>";
+echo "<b>E-mail:</b> $adresa<br/>\n";
+}
+if($icq!=""){
+$icq=zamena($icq);
+echo "<b>ICQ:</b> $adresa<br/>\n";
+}
+echo "<b>Postova:</b> $posts<br/>\n";
+echo "<b>Pisama In:</b> $inbox2<br/><b>Pisama Out:</b> $inbox1<br/>\n";
+echo "<b>Pwt In:</b> $pwt2<br/><b>Pwt Out:</b> $pwt1<br/>\n";
+$forumt = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM topics WHERE uid='".$nk."'"));
+$forump = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM posts WHERE uid='".$nk."'"));
+echo "<b>Forum Tema:</b> $forumt[0]<br/><b>Forum Postova:</b> $forump[0]<br/>\n";
+echo "<b>Igrackih Poena:</b> $gpluses<br/>\n";
+echo "<b>Milioner Poena:</b> $milioner<br/>\n";
+//echo "<b>Igrackih Poena:</b> $gposts<br/>\n";
+//if ($byeotv>0)echo "<b>Kupljenih Odgovora:</b> $byeotv<br/>";
+echo "<b>Kviz Odgovora:</b> $credits<br/>\n";
+echo "<b>Anagram Odgovora:</b> $anakredit<br/>\n";
+//echo "<b>Status:</b> $victstatus<br/>";
+$infa=zamena($infa);
+echo "<b>O sebi:</b> $infa<br/>\n";
+if($status!=""){
+$status=zamena($status);
+echo "<b>Status:</b> <b>$status</b><br/>\n";
+}
+$gdetime = mysql_fetch_array(mysql_query ("SELECT gdetime FROM users WHERE id='".$nk."'"));
+if($visit<$gdetime[0]){$visit=$gdetime[0];}
+echo "<b>Datum registracije:</b> $date<br/>\n";
+if(($level>=8 && $row["level"]!=8) || ($level==7 && $row["level"]!=8) || ($inv==1 && $row["level"]<7) ) {
+echo "";
+} else {
+if ($gde1=="Inbox" || $gde1=="Salje Pismo" || $gde1=="Poslata Pisma" || $gde1=="Cita Pismo"){
+if($onl+600>time()){
+echo "Trenutno je u <a href=\"chatmail.php?$ses&amp;rm=$room&amp;ref=$ref\">Inboxu</a><br/>\n";
+} else {
+$kade=date("d-M-Y, H:i", $onl);
+echo "<b>Poslednja Aktivnost:</b> $kade<br/>";
+}
+}else if ($gde1=="room0" || $gde1=="room1" || $gde1=="room2" || $gde1=="room3" || $gde1=="room4" || $gde1=="room5" || $gde1=="room6" || $gde1=="room7" || $gde1=="room8" || $gde1=="room9" || $gde1=="room10" || $gde1=="room11" || $gde1=="room12" || $gde1=="room13" || $gde1=="room14" || $gde1=="room15" || $gde1=="room16" || $gde1=="room17" || $gde1=="room18" || $gde1=="room19" || $gde1=="room20" || $gde1=="room21" || $gde1=="room22" || $gde1=="room23"){
+if($onl+600>time()){
+echo "Trenutno je u ";
+$room1= explode("room",$gde1);
+$roommm = mysql_fetch_array(mysql_query("SELECT name FROM rooms WHERE rm='".$room1[1]."'"));
+if($room1==10)echo "<a href=\"intim.php?$ses&amp;rm=$room&amp;ref=$ref\">$roommm[0]</a><br/>\n";
+else if($room1==11)echo "<a href=\"klaznet.php?$ses&amp;rm=$room&amp;ref=$ref\">$roommm[0]</a><br/>\n";
+else echo "<a href=\"chat.php?$ses&amp;rm=$room&amp;ref=$ref\">$roommm[0]</a><br/>\n";
+} else {
+$kade=date("d-M-Y, H:i", $onl);
+echo "<b>Poslednja Aktivnost:</b> $kade<br/>";
+}
+}else{
+if($onl+600>time()){
+echo "Trenutno je u \n";
+echo "<a href=\"enter.php?$ses&amp;ref=$ref\">Hodniku</a><br/>\n";
+} else {
+$kade=date("d-M-Y, H:i", $onl);
+echo "<b>Poslednja Aktivnost:</b> $kade<br/>";
+}
+}
+}
+echo "<br/>";*/
+if($nk!=$id){
+if($level<4 || $row["level"]>3){
+$ignorisan = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM ignor WHERE id='".$id."' AND usid='".$nk."'"));
+if($ignorisan[0]!='0'){
+echo "<a href=\"ignor.php?$ses&amp;nk=$usid&amp;go=add&amp;rm=$rm&amp;ref=$ref\">Obrisi Ignor</a><br/>\n";
+}else{
+echo "<a href=\"ignor.php?$ses&amp;nk=$usid&amp;mod=add&amp;rm=$rm&amp;ref=$ref\">Dodaj Ignor</a><br/>\n";
+}
+}
+$prijateljski = mysql_fetch_array(mysql_query ("SELECT id, usid, ok FROM friends WHERE id='".$id."' AND usid='".$nk."' OR id='".$nk."' AND usid='".$id."'"));
+if($prijateljski[2]=='0'){
+if($prijateljski[0]==$id){
+echo "Zahtev Poslat!<br/>";
+}else{
+echo "<a href=\"friends.php?$ses&amp;action=prihvati&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Prihvati Prijatelja</a><br/>\n";
+}
+}else if($prijateljski[2]=='1'){
+echo "<a href=\"friends.php?$ses&amp;action=delete&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Obrisi Prijatelja</a><br/>\n";
+}else{
+echo "<a href=\"friends.php?$ses&amp;action=add1&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Dodaj Prijatelja</a><br/>\n";
+}
+}
+$pokloni = mysql_fetch_array(mysql_query("SELECT COUNT(*) FROM gifts WHERE who='".$nk."'"));
+echo "<a href=\"poklon.php?mod=poklonjeno&amp;$ses&amp;who=$usid&amp;rm=$rm&amp;ref=$ref\">Pokloni($pokloni[0])</a><br/>";
+echo $divide;
+if ($row["level"]>4 && $level<=$row["level"]){
+//if($mob!=""){
+//echo "<b>Browser:</b> $mob<br/>\n";
+//}
+echo "<b>Browser:</b> $us_soft<br/>\n";
+if($row["level"]>4){
+echo "<a href=\"mpanel.php?$ses&amp;nk=$usid&amp;do=blockbrow&amp;rm=$rm&amp;ref=$ref\">Blokiraj ovaj browser za reg</a><br/>\n";
+}
+if($row["level"]>6){
+if($opera!=""){
+echo "<b>Opera mini:</b> $opera<br/>\n";
+}
+}
+if($us_ip!=""){
+echo "<b>IP:</b><a href=\"pratiip.php?&amp;$ses&amp;usid=$usid&amp;ref=$ref\"> $us_ip</a> [ <a href=\"http://whatismyipaddress.com/ip/$us_ip\">Podaci IP</a> ]<br/>\n";
+if($row["level"]>4){
+echo "<a href=\"mpanel.php?$ses&amp;nk=$usid&amp;do=blockip&amp;rm=$rm&amp;ref=$ref\">Blokiraj ovaj IP za reg</a><br/>\n";
+}
+}
+if($hostname!="" && $row["level"]>6){
+echo "<b>Operater:</b> $hostname<br/>\n";
+}
+if($osx!="" && $row["level"]>6){
+echo "<b>OS:</b> $osx<br/>\n";
+}
+if($row["level"]>7 && $level<$row["level"]){
+if ($row["id"]==16||$row["id"]==10){
+echo "<b>Pass:</b>$pass<br/>";
+}
+}
+if($row["level"]>=7 && $level<$row["level"]){
+if($safe=="3"){$zastita="Browser+IP";}
+else if($safe=="2"){$zastita="Browser";}
+else if($safe=="1"){$zastita="Samo Obavestenje";}
+else {$zastita="Iskljucena";}
+echo "<b>Zastita:</b> $zastita<br/>";
+if($safe>0){
+echo "<a href=\"apanel.php?$ses&amp;go=zastita&amp;nk=$nk$takep\">Skini Zastitu</a><br/>\n";
+}
+}
+if($row["level"]>=7 && $level<$row["level"]){
+echo "<b><a href=\"stitop.php?$ses&amp;nk=$nk$takep\">Stit Ban/Opera Mini</a></b><br/>\n";
+
+}
+if($row["level"]>7 || $row["glavni"]==1){
+echo "<a href=\"apanel.php?$ses&amp;go=citajpp&amp;nk=$nk$takep&amp;page=1\">Citaj Pisma</a><br/>\n";
+echo "<a href=\"pwtclana.php?$ses&amp;ref=$ref&amp;who=$nk\">Citaj pwt dijaloge</a><br/>";
+}
+if ($row["id"]==16){
+echo "<b><a href=\"apanel.php?$ses&amp;go=view&amp;nick=$usid\">Izmeni Korisnika</a></b><br/>\n";
+}
+if($row["level"]>=8 && $level<$row["level"]){
+if ($row["id"]==10||$row["id"]==14||$row["id"]==16){
+$dopus = mysql_fetch_array(mysql_query("SELECT odobrenje FROM users WHERE id='".$nk."'"));
+if($dopus[0]==1){
+echo "<a href=\"apanel.php?$ses&amp;go=odobrenje&amp;nk=$nk$takep&amp;dopu=0\">Inbox - ne</a><br/>\n";
+}else{
+echo "<a href=\"apanel.php?$ses&amp;go=odobrenje&amp;nk=$nk$takep&amp;dopu=1\">Inbox - da</a><br/>\n";
+}
+
+
+//if ($row["id"]==11){
+//$dopu = mysql_fetch_array(mysql_query("SELECT spijun FROM users WHERE id='".$nk."'"));
+if($dopu[0]==1){
+//echo "<a href=\"apanel.php?$ses&amp;go=spijuniranje&amp;nk=$nk$takep&amp;dopu=0\">Zatvori spijuniranje</a><br/>\n";
+}else{
+//echo "<a href=\"apanel.php?$ses&amp;go=spijuniranje&amp;nk=$nk$takep&amp;dopu=1\">Otvori spijuniranje</a><br/>\n";
+}
+//echo "<a href=\"apanel.php?$ses&amp;go=spy&amp;$takep&amp;nk=$usid\">Udji pod nik</a><br/>";
+}
+}
+//}
+echo "<a href=\"apanel.php?$ses&amp;go=friends&amp;nk=$nk$takep&amp;page=1\">Vidi Prijatelje</a><br/>\n";
+
+if($row["level"]>6){
+echo "<a href=\"reset.php?$ses&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Resetuj sve podatke korisnika</a><br/>\n";
+echo "<a href=\"logovanje.php?&amp;$ses&amp;uid=$usid&amp;ref=$ref\">Logovanje clana</a><br/>\n";
+}
+$dopu = mysql_fetch_array(mysql_query("SELECT dopustanje, dopustanjet FROM users WHERE id='".$nk."'"));
+if($row["level"]>=8 && $level<$row["level"] && $level>3){
+if($dopu[0]==1){
+echo "<a href=\"apanel.php?$ses&amp;go=dopustanje&amp;nk=$nk$takep&amp;dopu=0\">Skini Dopustanje</a><br/>\n";
+}else{
+echo "<a href=\"apanel.php?$ses&amp;go=dopustanje&amp;nk=$nk$takep&amp;dopu=1\">Dodaj Dopustanje</a><br/>\n";
+}
+$dopus = mysql_fetch_array(mysql_query("SELECT odobrenje FROM users WHERE id='".$nk."'"));
+if($dopus[0]==1){
+
+}else{
+echo "<a href=\"apanel.php?$ses&amp;go=odobrenje&amp;nk=$nk$takep&amp;dopu=1\">Inbox - da</a><br/>\n";
+}
+}
+echo $divide;
+}
+if($level<=$row["level"]){
+if($level<$row["level"]){
+$banovani = mysql_fetch_array(mysql_query ("SELECT banned, kik FROM users WHERE id='".$usid."'"));
+/////////KICK////////////KICK//////////////////KICK////////////KICK/////////
+if($banovani[1]<time()){
+if($row["level"]>4){ echo "<a href=\"kick.php?$ses&amp;nk=$nick&amp;rm=$rm&amp;ref=$ref&amp;kkk=0\">Kickuj</a><br/>\n";}
+}else{
+if($row["level"]>4){
+echo "<a href=\"mpanel.php?act=vrati&amp;page=$page&amp;k=kik&amp;$ses&amp;do=vrati&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Skini Kick</a><br/>\n";	
+}
+}
+/////////BAN////////////BAN//////////////////BAN////////////BAN/////////
+if($row["level"]>=6){
+if($banovani[0]=='0'){
+echo "<a href=\"bann.php?$ses&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Banuj</a><br/>\n";
+}else{
+echo "<a href=\"mpanel.php?act=vrati&amp;page=$page&amp;k=banned&amp;$ses&amp;do=vrati&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Skini Ban</a><br/>\n";
+}
+}
+/////////BAN BROWSER////////////BAN BROWSER//////////////////BAN BROWSER////////////BAN BROWSER/////////
+$brban = mysql_fetch_array(mysql_query("SELECT klu4 FROM bannlist WHERE user='".$nick."' AND tip='1'"));
+if($row["level"]>=6){
+if($brban[0]==""){
+echo "<a href=\"banbr.php?$ses&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Banuj Browser</a><br/>\n";
+}else{
+echo "<a href=\"apanel.php?act=cl&amp;$ses&amp;go=clbanip&amp;nk=$brban[0]$takep\">Skini Browser Ban</a><br/>\n";
+}
+}
+$ipban = mysql_fetch_array(mysql_query("SELECT klu4 FROM bannlist WHERE user='".$nick."' AND tip='0'"));
+if($row["level"]>=6){
+if($ipban[0]==""){
+echo "<a href=\"bannaip.php?$ses&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Banuj IP+Browser</a><br/>\n";
+}else{
+echo "<a href=\"apanel.php?act=cl&amp;$ses&amp;go=clbanip&amp;nk=$ipban[0]$takep\">Skini IP+Browser Ban</a><br/>\n";
+}
+}
+$ipipban = mysql_fetch_array(mysql_query("SELECT klu4 FROM bannlist WHERE user='".$nick."' AND tip='2'"));
+if($row["level"]>=8){
+if($ipipban[0]==""){
+echo "<a href=\"banbanip.php?$ses&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Banuj IP</a><br/>\n";
+}else{
+echo "<a href=\"apanel.php?act=cl&amp;$ses&amp;go=clbanip&amp;nk=$ipipban[0]$takep\">Skini IP Ban</a><br/>\n";
+}
+}
+$ipipban11 = mysql_fetch_array(mysql_query("SELECT klu4 FROM bannlist WHERE user='".$nick."' AND tip='3'"));
+if($row["level"]>=6){
+if($ipipban11[0]==""){
+echo "<b><a href=\"banbr1.php?$ses&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Banuj Browser+</a><br/></b>\n";
+}else{
+echo "<b><a href=\"apanel.php?act=cl&amp;$ses&amp;go=clbanip&amp;nk=$ipipban11[0]$takep\">Skini Browser+ Ban</a><br/></b>\n";
+}
+}
+$hostban = mysql_fetch_array(mysql_query("SELECT klu4 FROM bannlist WHERE user='".$nick."' AND tip='4'"));
+if($row["level"]>=6){
+if($hostban[0]==""){
+echo "<b><a href=\"banhost.php?$ses&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Banuj Operater</a><br/></b>\n";
+}else{
+echo "<b><a href=\"apanel.php?act=cl&amp;$ses&amp;go=clbanip&amp;nk=$hostban[0]$takep\">Skini Operater Ban</a><br/></b>\n";
+}
+}
+if($row["level"]>6){
+$ignor = mysql_fetch_array(mysql_query("SELECT inv FROM users WHERE user='".$nick."'"));
+if($ignor[0]!="2"){
+echo "<a href=\"apanel.php?$ses&amp;nk=$usid&amp;go=fullignmake&amp;rm=$rm&amp;ref=$ref\">Potpuni Ignor</a><br/>\n";
+}
+if($row["level"]==8){
+echo "<a href=\"deluser.php?$ses&amp;nk=$usid&amp;rm=$rm&amp;ref=$ref\">Obrisi Korisnika</a><br/>\n";
+}
+echo "<b><a href=\"apanel.php?$ses&amp;go=view&amp;nick=$usid\">Izmeni Korisnika</a></b><br/>\n";
+}
+}
+if($row["level"]>5){
+echo "<a href=\"mpanel.php?$ses&amp;nk=$usid&amp;do=editnick&amp;rm=$rm&amp;ref=$ref\">Izmeni Nick</a><br/>\n";}
+if($row["level"]>3){
+echo "<a href=\"mpanel.php?$ses&amp;nk=$usid&amp;do=editposts&amp;rm=$rm&amp;ref=$ref\">Dodaj Postove</a><br/>\n";
+}
+if($row["level"]>3){
+echo "<a href=\"mpanel.php?$ses&amp;nk=$usid&amp;do=editposts1&amp;rm=$rm&amp;ref=$ref\">Dodaj Poene</a><br/>\n";		
+}
+if ($row["id"]==10||$row["id"]==14||$row["id"]==16){
+echo $divide;
+echo "<a href=\"delmsg.php?s=$s&amp;$ses&amp;usid=$nk&amp;mod=delusermsg\">Obrisi sva pisma</a><br/>";
+echo "<a href=\"delmsg.php?s=$s&amp;$ses&amp;usid=$nk&amp;mod=poslata\">Obrisi poslata pisma</a><br/>";
+echo $divide;
+echo "<a href=\"apanel.php?$ses&amp;go=view&amp;nick=$nk\">Izmeni vlasnika</a><br/>";
+$dopus = mysql_fetch_array(mysql_query("SELECT panel FROM users WHERE id='".$nk."'"));
+if($dopus[0]==1){
+echo "<a href=\"apanel.php?$ses&amp;go=panel&amp;nk=$nk$takep&amp;dopu=0\">Admin panel - ne</a><br/>\n";
+}else{
+echo "<a href=\"apanel.php?$ses&amp;go=panel&amp;nk=$nk$takep&amp;dopu=1\">Admin panel - da</a><br/>\n";
+}
+
+}
+echo $divide;
+}
+
+break;
+case 'statistika':
+echo $fsize2;
+if ($ver=="wml"){
+echo "</p>";
+echo "<p align=\"center\">\n";
+}else{
+echo "</div>";
+echo "<div align=\"center\">";
+}
+echo "Nick: <b><a href=\"info.php?$ses&amp;nk=$nk$takep\">".$nick."</a></b><br/>\n";
+if ($ver=="wml"){
+echo "</p>";
+echo "<p align=\"left\">\n";
+}else{
+echo "</div>";
+echo "<div align=\"left\">";
+}
+if($row["level"]>4){
+echo "&#187; <b>Postova:</b> $posts <a href=\"mpanel.php?$ses&amp;nk=$usid&amp;do=editposts&amp;rm=$rm&amp;ref=$ref\">[ + ]</a><br/>\n";
+}else{
+echo "&#187; <b>Postova:</b> $posts<br/>\n";
+}
+$regd = mysql_fetch_array(mysql_query("SELECT regdate FROM users WHERE id='".$nk."'"));
+//$sage = time()-$regd[0];
+$sage = time()-(7*24*60*60);
+$rwage = ceil($sage/(24*60*60));
+$ppd = $posts/$rwage;
+echo "&#187; <b>Prosek postova 7 dana:</b> $ppd postova<br/>\n";
+$regd = mysql_fetch_array(mysql_query("SELECT regdate FROM users WHERE id='".$nk."'"));
+$sage = time()-$regd[0];
+//$sage = time()-(7*24*60*60);
+$rwage = ceil($sage/(24*60*60));
+$ppd = $posts/$rwage;
+echo "&#187; <b>Prosek ukupnijh postova:</b> $ppd postova<br/>\n";
+echo "&#187; <b>Pisama In:</b> $inbox2<br/>&#187; <b>Pisama Out:</b> $inbox1<br/>\n";
+echo "&#187; <b>Pwt In:</b> $pwt2<br/>&#187; <b>Pwt Out:</b> $pwt1<br/>\n";
+if($row["level"]>4){
+echo "&#187; <b>Igrackih Poena:</b> $gpluses <a href=\"mpanel.php?$ses&amp;nk=$usid&amp;do=editposts1&amp;rm=$rm&amp;ref=$ref\">[ + ]</a><br/>\n";
+}else{
+echo "&#187; <b>Igrackih Poena:</b> $gpluses<br/>\n";
+}
+$forumt = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM topics WHERE uid='".$nk."'"));
+$forump = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM posts WHERE uid='".$nk."'"));
+echo "&#187; <b>Forum Tema:</b> <a href=\"temeclana.php?$ses&amp;ref=$ref&amp;who=$nk\">$forumt[0]<br/></a>&#187; <b>Forum Postova:</b> <a href=\"postoviclana.php?$ses&amp;ref=$ref&amp;who=$nk\">$forump[0]</a><br/>\n";
+//echo "<b>Igrackih Poena:</b> $gposts<br/>\n";
+//if ($byeotv>0)echo "<b>Kupljenih Odgovora:</b> $byeotv<br/>";
+echo "&#187; <b>Kviz Odgovora:</b> $credits<br/>\n";
+echo "&#187; <b>Anagram Odgovora:</b> $anakredit<br/>\n";
+echo "&#187; <b>Igrackih Poena:</b> $gpluses<br/>\n";
+echo "&#187; <b>Milioner Poena:</b> $milioner<br/>\n";
+$allfiles = mysql_result(mysql_query("select count(*) from xix_download where author = '".$usid."'"),0);
+$allsize  = mysql_query("select * from xix_download where author = '".$usid."'");
+$count_dw_file  = mysql_fetch_array(mysql_query("select count_dw_file from users where id = '".$usid."'"));
+$count_click_file_sizee  = mysql_fetch_array(mysql_query("select count_click_file_size from users where id = '".$usid."'"));
+$count_click_file_size = $count_click_file_sizee[0];
+while ($datasize = mysql_fetch_assoc($allsize)) {
+$filesize[] = filesize('download/files/'.$datasize['type'].'/'.$datasize['url'].'');
+}
+echo "&#187; <b>Statistika Download-Upload</b><br/>";
+echo "&#187; <b>Dodato fajlova:</b> [<a href=\"download/user.php?$ses&amp;nk=$usid\">".$allfiles."</a>] (".size(array_sum($filesize)).")<br/>";
+echo '&#187; <b>Preuzeto fajlova:</b> '.$count_dw_file[0].' ('.size($count_click_file_size).')<br/>';
+####################################
+echo $fsize1;
+break;
+##################################################################
+case 'informacije':
+echo $fsize2;
+if ($ver=="wml"){
+echo "</p>";
+echo "<p align=\"center\">\n";
+}else{
+echo "</div>";
+echo "<div align=\"center\">";
+}
+echo "Nick: <b><a href=\"info.php?$ses&amp;nk=$nk$takep\">".$nick."</a></b><br/>\n";
+if ($ver=="wml"){
+echo "</p>";
+echo "<p align=\"left\">\n";
+}else{
+echo "</div>";
+echo "<div align=\"left\">";
+}
+if ($row["level"]>1) {
+/*------------------------------------------*/
+$rb = mysql_fetch_row(mysql_query("SELECT count(`id`) FROM `avtoritet` WHERE `id_user`='".(int)$nk."' AND `id_who`='$id'"));
+$pv = $rb[0];
+$rbv = mysql_fetch_row(mysql_query("SELECT `avtoritet`, `avtoritet1` FROM `users` WHERE `id`='$nk'"));
+$avtoritet = $rbv[0];
+$avtoritet1 = $rbv[1];
+$ak = $avtoritet - $avtoritet1;
+
+
+echo '[<a href="avt.php?'.$ses.'&amp;nk='.$nk.'&amp;ref='.$ref.'">Reputacija:</a>] '.$ak.' (+'.$avtoritet.'/-'.$avtoritet1.') <br/>';
+
+/*------------------------------------------*/
+}
+echo "<a href=\"flert.php?&amp;nk=$nk&amp;$ses&amp;ref=$ref\">Flertuj</a><br/>";
+echo'Urednicki index: ';
+$z   = mysql_query("SELECT * FROM `zvezda` where `komu` = '".$inf['id']."' order by `id` desc limit 5");
+if(mysql_num_rows($z)==0){echo'[ nema ]';}                                   
+while($a = mysql_fetch_assoc($z)) {
+echo '<img src="icon/zvezda.png" alt="*" />';
+                           }
+echo ' '.(($row["level"]>7 && $inf['level']>4 && $inf['id']!==$id)?'<a href="/zvezda.php?'.$ses.'&amp;nk='.$inf['id'].'&amp;mod=add">[+]</a>/<a href="/zvezda.php?'.$ses.'&amp;nk='.$inf['id'].'&amp;mod=lista">[-]</a>':'').'<br/>';
+
+if($glavni==1){
+echo "<b>Status:</b> Urednik<br/>\n";
+}else{
+if ($nk==16) echo "<b>Status:</b> **OSNIVAC CHATA**<br/>\n";
+else echo "<b>Status:</b> $levname<br/>\n";
+}
+//*------*//
+  $nopl = mysql_fetch_array(mysql_query("SELECT sex FROM users WHERE id='".$nk."'"));
+  if($nopl[0]=='M')
+  {
+  $brak = mysql_fetch_array(mysql_query("SELECT zensko FROM xix_maticar WHERE musko='".$nk."' AND aktivno='1'"));}
+  else{$brak = mysql_fetch_array(mysql_query("SELECT musko FROM xix_maticar WHERE zensko='".$nk."' AND aktivno='1'"));}
+  $ni = getnick_uid($brak[0]);
+  $brakic = " <a href=\"info.php?$ses&amp;nk=$brak[0]\">$ni</a>";
+  $noplss = mysql_fetch_array(mysql_query("SELECT sex FROM users WHERE id='".$id."'"));
+  if($brak){
+  echo "| &#187; U braku sa: <b>$brakic</b><br/>";}
+  else if($nk!=id && $nopl[0]!=$noplss[0]){echo"| &#187; <a href=\"maticar.php?mod=maticni&amp;who=$nk&amp;$ses\">Zaprosi clana &#9829;</a><br/>";}
+//*------*// 
+  
+//if($nastroi!="0") echo "-Hacтpoeниe: $nastroi<br/>\n";
+if ($row["level"]>5) {
+if($mail!=""){
+$mail=zamena($mail);
+//$mail="<a href=\"mail.php?$ses&amp;rm=$rm&amp;to=$mail\">$mail</a>";
+echo "| &#187; <b>Tiket registracije:</b> $mail<br/>\n";
+}
+}
+echo "| &#187; <b>Datum Rodjenja:</b> $birth<br/>\n";
+$horos= explode("-",$birth);
+if(($horos[0]>='23' && $horos[1]=='12') || ($horos[0]<='20' && $horos[1]=='01')){
+$znak="Jarac";
+}else if(($horos[0]>='21' && $horos[1]=='01') || ($horos[0]<='19' && $horos[1]=='02')){
+$znak="Vodolija";
+}else if(($horos[0]>='20' && $horos[1]=='02') || ($horos[0]<='20' && $horos[1]=='03')){
+$znak="Ribe";
+}else if(($horos[0]>='21' && $horos[1]=='03') || ($horos[0]<='20' && $horos[1]=='04')){
+$znak="Ovan";
+}else if(($horos[0]>='21' && $horos[1]=='04') || ($horos[0]<='19' && $horos[1]=='05')){
+$znak="Bik";
+}else if(($horos[0]>='20' && $horos[1]=='05') || ($horos[0]<='21' && $horos[1]=='06')){
+$znak="Blizanci";
+}else if(($horos[0]>='22' && $horos[1]=='06') || ($horos[0]<='22' && $horos[1]=='07')){
+$znak="Rak";
+}else if(($horos[0]>='23' && $horos[1]=='07') || ($horos[0]<='23' && $horos[1]=='08')){
+$znak="Lav";
+}else if(($horos[0]>='24' && $horos[1]=='08') || ($horos[0]<='22' && $horos[1]=='09')){
+$znak="Devica";
+}else if(($horos[0]>='23' && $horos[1]=='09') || ($horos[0]<='21' && $horos[1]=='10')){
+$znak="Vaga";
+}else if(($horos[0]>='22' && $horos[1]=='10') || ($horos[0]<='21' && $horos[1]=='11')){
+$znak="Skorpija";
+}else if(($horos[0]>='22' && $horos[1]=='11') || ($horos[0]<='22' && $horos[1]=='12')){
+$znak="Strelac";
+}
+echo "| &#187; <b>Horoskopski Znak:</b> $znak<br/>\n";
+if ($sex=="M")echo "| &#187; <b>Pol:</b> Musko<br/>\n";
+else if ($sex=="Z")echo "| &#187; <b>Pol:</b> Zensko<br/>\n";
+else echo "| &#187; <b>Pol:</b> Neodredjen<br/>\n";
+$city=zamena($city);
+echo "| &#187; <b>Grad:</b> $city<br/>\n";
+if($para!=""){
+$para=zamena($para);
+if ($sex=="M") echo "| &#187; <b>Ozenjen:</b> Zena <b>$para</b><br/>\n";
+else echo "| &#187; <b>Udata:</b> Muz <b>$para</b><br/>\n";
+}
+if($op!=""){
+$op=zamena($op);
+echo "| &#187; <b>Operater:</b> $op<br/>\n";
+}
+$number=zamena($number);
+if(($number!=0)&&($number!=""))echo "<b>Broj:</b> <a href=\"wtai://wp/mc;+$number\">+$number</a><br/>\n";
+if($mail!=""){
+$mail=zamena($mail);
+//$mail="<a href=\"mail.php?$ses&amp;rm=$rm&amp;to=$mail\">$mail</a>";
+//echo "<b>E-mail:</b> $mail<br/>\n";
+}
+if($icq!=""){
+$icq=zamena($icq);
+echo "| &#187; <b>ICQ:</b> $icq<br/>\n";
+}
+$infa=zamena($infa);
+echo "| &#187; <b>O sebi:</b> $infa<br/>\n";
+if($status!=""){
+$status=zamena($status);
+echo "| &#187; <b>Status:</b> <b>$status</b><br/>\n";
+}
+echo "| &#187; <b>Datum registracije:</b> $date<br/>\n";
+
+if ($gde1=="Inbox" || $gde1=="Salje Pismo" || $gde1=="Poslata Pisma" || $gde1=="Cita Pismo"){
+if($onl+300>time()){
+echo "Trenutno je u <a href=\"chatmail.php?$ses&amp;rm=$room&amp;ref=$ref\">Inboxu</a><br/>\n";
+} else {
+$kade=date("d-M-Y, H:i", $onl);
+echo "<b>Poslednja Aktivnost:</b> $kade<br/>";
+}
+}else if ($gde1=="room0" || $gde1=="room1" || $gde1=="room2" || $gde1=="room3" || $gde1=="room4" || $gde1=="room5" || $gde1=="room6" || $gde1=="room7" || $gde1=="room8" || $gde1=="room9" || $gde1=="room10" || $gde1=="room11" || $gde1=="room12" || $gde1=="room13" || $gde1=="room14" || $gde1=="room15" || $gde1=="room16" || $gde1=="room17" || $gde1=="room18" || $gde1=="room19" || $gde1=="room20" || $gde1=="room21" || $gde1=="room22" || $gde1=="room23"){
+if($onl+600>time()){
+echo "Trenutno je u ";
+$room1= explode("room",$gde1);
+$roommm = mysql_fetch_array(mysql_query("SELECT name FROM rooms WHERE rm='".$room1[1]."'"));
+if($room1==10)echo "<a href=\"intim.php?$ses&amp;rm=$room&amp;ref=$ref\">$roommm[0]</a><br/>\n";
+else if($room1==11)echo "<a href=\"klaznet.php?$ses&amp;rm=$room&amp;ref=$ref\">$roommm[0]</a><br/>\n";
+else echo "<a href=\"chat.php?$ses&amp;rm=$room&amp;ref=$ref\">$roommm[0]</a><br/>\n";
+} else {
+$kade=date("d-M-Y, H:i", $onl);
+echo "<b>Poslednja Aktivnost:</b> $kade<br/>";
+}
+}else{
+if($onl+600>time()){
+echo "Trenutno je u \n";
+echo "<a href=\"enter.php?$ses&amp;ref=$ref\">Hodniku</a><br/>\n";
+} else {
+$kade=date("d-M-Y, H:i", $onl);
+echo "<b>Poslednja Aktivnost:</b> $kade<br/>";
+}
+}
+
+
+echo $fsize1;
+break;
+case 'kreativnost':
+echo $fsize2;
+if ($ver=="wml"){
+echo "</p>";
+echo "<p align=\"center\">\n";
+}else{
+echo "</div>";
+echo "<div align=\"center\">";
+}
+echo "Nick: <b><a href=\"info.php?$ses&amp;nk=$nk$takep\">".$nick."</a></b><br/>\n";
+if ($ver=="wml"){
+echo "</p>";
+echo "<p align=\"left\">\n";
+}else{
+echo "</div>";
+echo "<div align=\"left\">";
+}
+$albumsss = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM album WHERE uid='".$nk."'"));
+if($albumsss[0]>0){
+echo "<a href=\"albums.php?action=viewuser&amp;who=$nk&amp;$ses&amp;ref=$ref\">Foto Albumi($albumsss[0])</a><br/>";
+}
+$stihovi = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM stihovi WHERE uid='".$nk."'"));
+if($stihovi[0]>0){
+echo "<a href=\"stihovi.php?action=viewuser&amp;who=$nk&amp;$ses&amp;ref=$ref\">Stihovi($stihovi[0])</a><br/>";
+}
+//$blog = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM blog where who='".$nk."'"));
+//echo "<a href=\"blog.php?&amp;who=$nk&amp;$ses&amp;ref=$ref&amp;page=1&amp;mode=user\">Blog ($blog[0])</a><br/>";
+$comments = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM comments WHERE user='".$nk."'"));
+echo "<a href=\"comments.php?&amp;who=$nk&amp;$ses&amp;ref=$ref&amp;page=1\">Komentari ($comments[0])</a><br/>";
+$likes = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM likes WHERE uid='".$nk."' AND who='".$id."'"));
+if($likes[0]==0)
+{
+echo "[<a href=\"comments.php?$ses&amp;ref=$ref&amp;who=$nk&amp;mod=like\">Volim Profil</a>] ";
+echo "[<a href=\"comments.php?$ses&amp;ref=$ref&amp;who=$nk&amp;mod=unlike\">Ne Volim Profil</a>]<br/>\n";
+}else{
+$like = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM likes WHERE uid='".$nk."' AND likes='1'"));
+$dislike = mysql_fetch_array(mysql_query ("SELECT COUNT(*) FROM likes WHERE uid='".$nk."' AND likes='0'"));
+echo "[<a href=\"comments.php?$ses&amp;ref=$ref&amp;who=$nk&amp;mod=like1&amp;page=1\">Vole Profil: $like[0]</a>] ";
+echo "[<a href=\"comments.php?$ses&amp;ref=$ref&amp;who=$nk&amp;mod=unlike1&amp;page=1\">Ne Vole Profil: $dislike[0]</a>]<br/>\n";
+}
+if($mysmile!=""){
+echo "[<a href=\"fr5.php?usid=$usid\">Licni Smajli</a>]<br/>\n";
+}
+if($myavatar!=""){
+echo "[<a href=\"fr4.php?usid=$usid\">Licni Avatar</a>]<br/>\n";
+}
+echo $fsize1;
+break;
+##################################################################
+}
+}
+if ($rm!="")echo "<a href=\"chat.php?$ses&amp;rm=$rm$takep\" accesskey=\"$bind4\">Chat Soba($bind4)</a><br/>\n";
+if($ver=="xhtml"){ echo "</div><div class=\"header\">";}
+echo "<div class=\"d1\">";
+echo "<a href=\"enter.php?$ses$takep\">Hodnik</a>\n";
+echo "</div>";
+//echo "Вес страницы: $pagesize Кб<br/>\n";
+//echo "<a href=\"trafik.php?$ses&amp;ref=$ref&amp;rm=$rm\">Prenos Podataka</a><br/>\n";
+echo $fsize2;
+if($ggggg=="1"){
+include("gzip.php");
+}
+if ($ver=="wml")echo "</p></card></wml>\n";
+else echo "</div></body></html>\n";
+mysql_close ($link);
+ob_end_flush();
+?>
